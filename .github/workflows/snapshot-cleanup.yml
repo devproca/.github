@@ -1,0 +1,29 @@
+name: Snapshot Cleanup
+on:
+  workflow_call:
+    inputs:
+      packages:
+        description: 'JSON array of package names, e.g. ["ca.devpro.common.api","ca.devpro.common.exception"]'
+        required: true
+        type: string
+      package-type:
+        description: "npm, maven, rubygems, docker, nuget, or container"
+        required: true
+        type: string
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJSON(inputs.packages) }}
+    steps:
+      - uses: actions/delete-package-versions@v5
+        with:
+          package-name: ${{ matrix.package }}
+          package-type: ${{ inputs.package-type }}
+          min-versions-to-keep: 0
+          delete-only-pre-release-versions: "true"
